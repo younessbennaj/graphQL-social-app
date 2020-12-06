@@ -43,8 +43,8 @@ const resolvers = {
         },
     },
     Mutation: {
-        register: (_, { email }) => {
-            console.log(email);
+        register: (_, { registerInput: { password } }) => {
+            console.log(password);
             return "User registration !!"
         }
     }

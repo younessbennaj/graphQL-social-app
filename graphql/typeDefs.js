@@ -21,10 +21,18 @@ const typeDefs = gql`
     #Ce type Post défini les champs récupérable pour chaque user en DB
     type User {
         id: ID!
-        username: String 
-        email: String
-        createdAt: String
-        password: String
+        username: String!
+        token: String!
+        email: String!
+        createdAt: String!
+    }
+
+    #Shape du de l'input de données envoyés par le client pour enregistrer un user
+    input RegisterInput {
+        username: String!
+        password: String!
+        confirmPassword: String!
+        email: String!
     }
 
 
@@ -37,7 +45,7 @@ const typeDefs = gql`
 
     #Ici on va définir les différentes mutations que le client peut executer pour envoyer des données au serveur dans le but de créer/modifier/supprimer des données en DB
     type Mutation {
-        register(email: String): String
+        register(registerInput: RegisterInput): String
     }
 `
 
