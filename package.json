@@ -13,7 +13,9 @@
   "dependencies": {
     "@playlyfe/gql": "^2.6.2",
     "apollo-server": "^2.19.0",
+    "bcrypt": "^5.0.0",
     "graphql": "^15.4.0",
+    "joi": "^17.3.0",
     "mongoose": "^5.11.4",
     "nodemon": "^2.0.6"
   }
