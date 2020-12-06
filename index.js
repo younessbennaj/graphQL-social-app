@@ -15,10 +15,10 @@ const typeDefs = gql`
     #Ce type Post défini les champs récupérable pour chaque Post en DB
     type Post {
         id: ID!
+        username: String
         body: String
         title: String
         createdAt: String
-        username: String
     }
 
     #Ici on va préciser que par exemple la query Post doit retourner un array de type Post
@@ -33,8 +33,13 @@ const resolvers = {
             //On récupére tous les documents de notre collection "posts" via notre model Post qui agit comme intérface vis à vis de cette collection en DB
             return Post.find({})
                 .then(docs => {
+                    console.log(docs);
                     return docs
                 })
+                .catch(err => {
+                    console.log("Couldn't find the collection", err)
+                }
+                )
         }
     }
 }
