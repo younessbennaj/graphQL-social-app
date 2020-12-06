@@ -1,31 +1,13 @@
-const { ApolloServer, gql } = require('apollo-server');
-const { connect, Schema, model } = require("mongoose");
+const { ApolloServer } = require('apollo-server');
+const { connect, Schema, model, Types } = require("mongoose");
 //On importe l'URI de notre base de donnée depuis le fichier de config
 //On ajoute ce fichier à .gitignore pour ne pas le pusher sur le repo publique
 const { MONGODB } = require("./config");
 //On importe nos model pour créer ou récupérer nos instances en DB
+const { User } = require("./models/User");
 const { Post } = require("./models/Post");
-/* 
-    apollo-server:
-        
-        - Permet de définir le format de notre schema de données 
-        - Permet de définir comment récupérer et modifier ces données
-*/
-const typeDefs = gql`
-    #Ce type Post défini les champs récupérable pour chaque Post en DB
-    type Post {
-        id: ID!
-        username: String
-        body: String
-        title: String
-        createdAt: String
-    }
-
-    #Ici on va préciser que par exemple la query Post doit retourner un array de type Post
-    type Query {
-        getPosts: [Post]
-    }
-`
+//On importe nos typeDefs
+const { typeDefs } = require("./graphql/typeDefs");
 
 const resolvers = {
     Query: {
@@ -37,13 +19,36 @@ const resolvers = {
                     return docs
                 })
                 .catch(err => {
-                    console.log("Couldn't find the collection", err)
+                    console.log("Couldn't find the posts collection", err)
                 }
                 )
+        },
+        getUsers: () => {
+            //On récupère tous nos utilisateurs en DB 
+            return User.find({})
+                .then(docs => {
+                    return docs
+                })
+                .catch(err => {
+                    console.log("Couldn't find the users collection", err)
+                })
+        },
+        getUser: (_, { _id }) => {
+            const id = Types.ObjectId(_id);
+            return User.findById(id)
+                .then(user => {
+                    return user;
+                })
+            // return "find user by id"
+        },
+    },
+    Mutation: {
+        register: (_, { email }) => {
+            console.log(email);
+            return "User registration !!"
         }
     }
 }
-
 
 //On va utiliser mongoose, qui sert d'interface de programmation entre notre server et mongoDB
 //On va se connecter à notre base de donnée via l'URI fourni par MongoDB Atlas
