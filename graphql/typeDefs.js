@@ -22,7 +22,8 @@ const typeDefs = gql`
     type User {
         id: ID!
         username: String!
-        token: String!
+        password: String!
+        # token: String!
         email: String!
         createdAt: String!
     }
@@ -45,7 +46,7 @@ const typeDefs = gql`
 
     #Ici on va définir les différentes mutations que le client peut executer pour envoyer des données au serveur dans le but de créer/modifier/supprimer des données en DB
     type Mutation {
-        register(registerInput: RegisterInput): String
+        register(registerInput: RegisterInput): User
     }
 `
 

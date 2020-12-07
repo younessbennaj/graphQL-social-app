@@ -54,63 +54,70 @@ const resolvers = {
         },
     },
     Mutation: {
-        register: (_, { registerInput: { username, email, password, confirmPassword } }) => {
-            const { error } = validateUser({ username, email, password, confirmPassword });
+        register: (_, { registerInput }) => {
+            const { error } = validateUser(registerInput);
             //Si le model de donnée de l'utilisateur n'est pas validé, on envoi une erreur d'autentification
             if (error) throw new AuthenticationError(error.details[0].message);
 
-            //On va ensute vérifier que l'utilisateur n'existe pas en DB 
-            User.findOne({ email })
-                .then(doc => {
-                    //Si l'utilisateur est déjà présent en DB...
-                    if (doc) {
-                        throw new AuthenticationError("User already registred.");
-                    } else {
-                        //Sinon on peut passer à la création d'un nouvel utilisateur en DB... 
+            //CreateUser() => fonction pour valider et créer un user en DB
+            //Prends en argument les credentials avec lesquels on va créer l'user en DB
+            function createUser({ username, email, password, confirmPassword }) {
+                return new Promise((resolve, reject) => {
 
-                        //On va d'abord hasher le mot de passe pour le stocker en DB de manière sécurisé
-                        bcrypt.genSalt(10, function (err, salt) {
-                            bcrypt.hash(password, salt, function (err, hash) {
+                    //On va ensute vérifier que l'utilisateur n'existe pas en DB 
+                    User.findOne({ email })
+                        .then(doc => {
+                            //Si l'utilisateur est déjà présent en DB...
+                            if (doc) {
+                                throw new AuthenticationError("User already registred.");
+                            } else {
+                                //Sinon on peut passer à la création d'un nouvel utilisateur en DB... 
 
-                                let user = new User({
-                                    username,
-                                    email,
-                                    password: hash,
-                                    createdAt: new Date().toISOString()
+                                //On va hasher le password
+                                hashPassword(password).then(hash => {
+
+                                    //On créer une nouvelle instance du model User()
+                                    let user = new User({
+                                        username,
+                                        email,
+                                        password: hash,
+                                        createdAt: new Date().toISOString()
+                                    })
+
+                                    //Puis on va créer notre user en DB 
+                                    user.save().then(user => {
+                                        //On tient notre promesse avec les données du user en DB
+                                        resolve(user);
+                                    }).catch(err => {
+                                        //On peut rompre notre promesse avec le message d'erreur
+                                        reject(err);
+                                    });
                                 })
-
-                                console.log(user);
-
-                                // user.save().then(doc => {
-                                //     return doc;
-                                // }).catch(err => {
-                                //     console.log(err);
-                                // });
-                            });
-                        });
-                        // let user = new User({
-                        //     username,
-                        //     email,
-                        //     password,
-                        //     confirmPassword,
-                        //     createdAt
-                        // })
-
-                        // User.create(user).then(user => {
-                        //     console.log(user);
-                        // });
-
-                    }
+                            }
+                        })
                 })
-            // User.create({ username })
-            //     .then(user => console.log(user))
-            //     .catch(err => console.error(err.message))
-            //On va hasher notre mot de passe 
-            // bcrypt.genSalt(10, function (err, salt) {
-            //     bcrypt.hash(password, salt, function (err, hash) {
-            //         console.log(hash);
-            //     });
-            // });
+            } // Fin de createUser()
+
+            function hashPassword(password) {
+                //On va venir enrober notre code asynchrone avec un executeur
+                return new Promise((resolve, reject) => {
+                    //On  hasher le mot de passe pour le stocker en DB de manière sécurisé
+                    bcrypt.genSalt(10, function (err, salt) {
+                        bcrypt.hash(password, salt, function (err, hash) {
+                            //Notre promesse est rompue avec le message d'erreur
+                            if (err) reject(err)
+                            //Sinon elle est tenue avec notre promesse est tenue avec le mot de passe hasher
+                            else resolve(hash)
+                        });
+                    });
+                })
+            }
+
+            return createUser(registerInput)
+                .then(user => {
+                    //On retourne en réponse à la mutation le model donnée représantant l'user en DB
+                    return user;
+                })
 
         }
     }

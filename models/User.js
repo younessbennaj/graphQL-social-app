@@ -30,7 +30,7 @@ const userSchema = new Schema({
     }
 })
 
-//On va valider les données de notre utilisateur
+//On va valider les données utilisée pour la création de notre utilisateur
 const validateUser = (user) => {
     const schema = Joi.object({
         username: Joi.string()
@@ -59,6 +59,25 @@ const validateUser = (user) => {
 
     return schema.validate(user);
 }
+
+//On va valider les données utilisée pour authentifier notre utilisateur
+const validateAuth = (credentials) => {
+    const schema = Joi.object({
+        email: Joi.string()
+            .email()
+            .min(5)
+            .max(255)
+            .required(),
+
+        password: Joi.string()
+            .min(4)
+            .max(1024)
+            .required()
+    })
+
+    return schema.validate(credentials);
+}
+
 
 //On va compiler notre schema en model => Le model est le blueprint à partir duquel on va créer nos objet en DB
 //User = classe; user = instance
